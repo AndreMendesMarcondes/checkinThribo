@@ -14,6 +14,9 @@ class App extends React.Component {
       distanceKilometers: null,
       closerDistance: null,
       largeDistance: null,
+      avarageDistance: null,
+      fullDistance: null,
+      count: 0,
       addresses: [],
       distanceKilometersArr: [],
     };
@@ -24,13 +27,18 @@ class App extends React.Component {
 
   getLocation() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this.getCoordinates);
+      navigator.geolocation.getCurrentPosition(this.getCoordinates, null, {
+        enableHighAccuracy: true,
+        timeout: 5 * 10000, // 50 seconds
+        maximumAge: 0
+      });
     } else {
       alert("Geolocation is not suppoerted by this browser");
     }
   }
 
   getCoordinates(position) {
+    console.log(position)
     this.setState({
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
@@ -56,8 +64,9 @@ class App extends React.Component {
   }
 
   calcDistance() {
+    this.setState({ count: 0 })
     this.state.addresses.forEach(address => {
-      fetch(`http://localhost:8080/api/wifi/address=${address}`, {
+      fetch(`https://checkinthribo.herokuapp.com/api/wifi/address=${address}`, {
         mode: 'cors',
         headers: {
           'Access-Control-Allow-Origin': '*'
@@ -66,7 +75,7 @@ class App extends React.Component {
         .then(respose => respose.json())
         .then(data => {
           let distanceKm = data.rows.map(item => item.elements.map(distance => distance.distance.text))
-          this.getCloserDistance(distanceKm.toString())
+          this.getCloserDistance(parseFloat(distanceKm.toString().replace(" km", "").replace(",", ".")))
         })
         .catch(function (res) {
           if (res instanceof Error) {
@@ -77,22 +86,27 @@ class App extends React.Component {
   }
 
   getCloserDistance(distance) {
-    this.setState({
-      distanceKilometersArr: this.state.distanceKilometersArr.concat(distance)
-    })
+    if (distance < 50) {
+      this.setState({
+        distanceKilometersArr: this.state.distanceKilometersArr.concat(distance),
+        fullDistance: this.state.fullDistance + distance,
+        count: this.state.count + 1,
+        avarageDistance: parseFloat(this.state.fullDistance / this.state.count).toFixed(2)
+      })
+      console.log(this.state.avarageDistance)
+      if (this.state.closerDistance == null) {
+        this.setState({ closerDistance: distance });
+      }
+      if (this.state.largeDistance == null) {
+        this.setState({ largeDistance: distance });
+      }
 
-    if (this.state.closerDistance == null) {
-      this.setState({ closerDistance: distance });
-    }
-    if (this.state.largeDistance == null) {
-      this.setState({ largeDistance: distance });
-    }
-
-    if (this.state.largeDistance < distance) {
-      this.setState({ largeDistance: distance });
-    }
-    if (distance < this.state.closerDistance) {
-      this.setState({ closerDistance: distance });
+      if (this.state.largeDistance < distance) {
+        this.setState({ largeDistance: distance });
+      }
+      if (distance < this.state.closerDistance) {
+        this.setState({ closerDistance: distance });
+      }
     }
   }
 
@@ -120,10 +134,10 @@ class App extends React.Component {
       <div className="container text-center">
         <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
           <h2>Local Registrado Mais Perto: </h2>
-          <h1>{this.state.closerDistance}</h1>
+          <h1>{this.state.avarageDistance ? this.state.avarageDistance + " kilometros" : null}</h1>
           <button onClick={this.getLocation} className="btn btn-primary">Estou próximo da Thribo</button>
         </div>
-      </div>
+      </div >
     );
   }
 }
