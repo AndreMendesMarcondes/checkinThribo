@@ -1,8 +1,13 @@
-jpa:
+spring:
+  datasource:
+    url: jdbc:postgresql://mineiro.postgres.database.azure.com:5432/postgres
+    username: mineiro@mineiro
+    password: 103639ssA
+  database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+  jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-
