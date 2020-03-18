@@ -3,10 +3,17 @@ package com.mineiro.checkInThribo.controller;
 import com.mineiro.checkInThribo.domain.CheckIn;
 import com.mineiro.checkInThribo.repository.CheckInRepository;
 import com.mineiro.checkInThribo.service.CheckInService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("api/")
+@RequestMapping("api/checkin")
 public class CheckInController {
 
     private final CheckInService checkInService;
@@ -17,15 +24,9 @@ public class CheckInController {
         this.checkInService = checkInService;
         this.repository = repository;
     }
-
-    @GetMapping("rainer")
-    public void get(final String address) {
+    @CrossOrigin
+    @PostMapping
+    public void post(@RequestBody List<String> address){
         checkInService.checkIn(address);
-    }
-
-    @PostMapping("checkIn")
-    public void post(@RequestBody final CheckIn address) {
-        var po = address;
-        repository.save(address);
     }
 }

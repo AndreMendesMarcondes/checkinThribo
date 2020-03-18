@@ -64,25 +64,18 @@ class App extends React.Component {
   }
 
   calcDistance() {
-    this.setState({ count: 0 })
-    this.state.addresses.forEach(address => {
-      fetch(`https://checkinthribo.herokuapp.com/api/wifi/address=${address}`, {
-        mode: 'cors',
+    (async () => {
+      const rawResponse = await fetch('http://localhost:8080/api/checkin/', {
+        method: 'POST',
         headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
-        }
-      })
-        .then(respose => respose.json())
-        .then(data => {
-          let distanceKm = data.rows.map(item => item.elements.map(distance => distance.distance.text))
-          this.getCloserDistance(parseFloat(distanceKm.toString().replace(" km", "").replace(",", ".")))
-        })
-        .catch(function (res) {
-          if (res instanceof Error) {
-          } else {
-          }
-        });
-    });
+        },
+        body: JSON.stringify(this.state.addresses)
+      });
+      const content = await rawResponse.json();
+    })();
   }
 
   getCloserDistance(distance) {
@@ -93,7 +86,6 @@ class App extends React.Component {
         count: this.state.count + 1,
         avarageDistance: parseFloat(this.state.fullDistance / this.state.count).toFixed(2)
       })
-      console.log(this.state.avarageDistance)
       if (this.state.closerDistance == null) {
         this.setState({ closerDistance: distance });
       }

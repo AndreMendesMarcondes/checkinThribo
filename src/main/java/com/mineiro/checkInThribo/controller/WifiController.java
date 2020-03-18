@@ -7,13 +7,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
+import java.util.List;
+
 @RestController
 @RequestMapping("api/wifi")
 public class WifiController {
 
     @CrossOrigin
-    @RequestMapping(value = "/{address}", method = RequestMethod.GET)
-    public ResponseEntity<?> get(@PathVariable("address") String address){
+    @PostMapping
+    public ResponseEntity<?> post(@RequestBody List<String> address){
+        System.out.println(address);
         final String uri = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=" + address + "&destinations=Av. Dr. Adail Nunes da Silva, 1 - Centro, Araraquara - SP, 14802-340&mode=walking&language=PT&sensor=false&key=AIzaSyAZu4pQPzGEEe8ijqiP4cKnMrz7-Orercg";
 
         RestTemplate restTemplate = new RestTemplate();
